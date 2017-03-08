@@ -1,0 +1,40 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/context 
+	       http://www.springframework.org/schema/context/spring-context-4.3.xsd 
+		   http://www.springframework.org/schema/rabbit
+           http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<!-- <bean id="jsonMessageConverter" class="org.springframework.amqp.support.converter.Jackson2JsonMessageConverter" /> -->
+	
+	<context:component-scan base-package="org.song"/>
+	
+	<!-- <rabbit:connection-factory id="connectionFactory" host="${mq.host}" username="${mq.username}" password="${mq.password}" port="${mq.port}"/> -->
+
+	<rabbit:template id="rabbitTemplateTopic" connection-factory="connectionFactory" exchange="baibei.exchange.topic" routing-key="baibei.bar" />
+	<rabbit:template id="rabbitTemplateFanout" connection-factory="connectionFactory" exchange="baibei.exchange.fanout" message-converter="jsonMessageConverter"/>
+
+	<rabbit:admin connection-factory="connectionFactory" />
+
+
+	<!-- durable default true 持久化-->
+	<rabbit:queue name="baibei.queue.Mercury" />
+	<rabbit:queue name="baibei.queue.Venus" />
+
+	<rabbit:topic-exchange name="baibei.exchange.topic">
+		<rabbit:bindings>
+			<rabbit:binding queue="baibei.queue.Mercury" pattern="baibei.*" />
+		</rabbit:bindings>
+	</rabbit:topic-exchange>
+	
+	<rabbit:fanout-exchange name="baibei.exchange.fanout">
+		<rabbit:bindings>
+			<rabbit:binding queue="baibei.queue.Mercury"/>
+			<rabbit:binding queue="baibei.queue.Venus"/>
+		</rabbit:bindings>
+	</rabbit:fanout-exchange>
+	
+</beans>
